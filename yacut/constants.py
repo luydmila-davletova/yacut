@@ -6,6 +6,8 @@ ALLOWED_CHARACTERS = ascii_letters + digits
 PATTERN = r'^[a-zA-Z0-9]{1,16}$'
 REGEXP_VALIDATION = r'^[a-zA-Z0-9-_]+$'
 
+DEFAULT_SHORT_ID_LENGTH = 6
+
 DESCRIPTION_URL = 'Длинная ссылка'
 MISSING_DATA = 'Обязательное поле'
 ERROR_URL = 'Некорректный URL'
