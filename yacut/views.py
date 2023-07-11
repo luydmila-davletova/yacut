@@ -1,34 +1,38 @@
-from flask import flash, redirect, render_template, request
+from flask import (
+    flash, redirect,
+    render_template,
+    request
+)
 
 from . import app, db
 from .forms import URLForm
 from .models import URLMap
-from .utils import get_unique_short
+from .utils import get_unique_short_id
 
 
 @app.route('/', methods=['GET', 'POST'])
 def index_view():
     form = URLForm()
     if form.validate_on_submit():
-        custom_id = form.custom_id.data
-        if not custom_id:
-            custom_id = get_unique_short()
-        elif URLMap.query.filter_by(short=custom_id).first():
-            form.custom_id.errors = [f'Имя {custom_id} уже занято!']
+        short = form.custom_id.data
+        if not short:
+            short = get_unique_short_id()
+        elif URLMap.query.filter_by(short=short).first():
+            flash(f'Имя {short} уже занято!')
             return render_template('main_page.html', form=form)
         url_map = URLMap(
             original=form.original_link.data,
-            short=custom_id,
+            short=short,
         )
         db.session.add(url_map)
         db.session.commit()
         flash(f'Ваша новая ссылка готова: '
-              f'<a href="{request.base_url}{custom_id}">'
-              f'{request.base_url}{custom_id}</a>')
+              f'<a href="{request.base_url}{short}">'
+              f'{request.base_url}{short}</a>')
     return render_template('main_page.html', form=form)
 
 
-@app.route('/<string:short>', methods=['GET'])
-def url_redirect(short):
-    return redirect(
-        URLMap.query.filter_by(short=short).first_or_404().original)
+@app.route('/<string:custom_id>')
+def url_redirect(custom_id):
+    url_map = URLMap.query.filter_by(short=custom_id).first_or_404()
+    return redirect(url_map.original)

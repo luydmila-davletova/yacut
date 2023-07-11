@@ -14,10 +14,13 @@ class URLMap(db.Model):
     def to_dict(self):
         return dict(
             url=self.original,
-            short_link=url_for('yacat_redirect',
-                               short=self.short,
-                               _external=True))
+            short_link=url_for(
+                'url_redirect',
+                custom_id=self.short,
+                _external=True
+            )
+        )
 
     def from_dict(self, data):
-        setattr(self, 'original', data['url'])
-        setattr(self, 'short', data['custom_id'])
+        self.original = data['url']
+        self.short = data['custom_id']

@@ -1,12 +1,12 @@
-from random import choices
-from string import ascii_letters, digits
+import random
 
 from .models import URLMap
+from .constants import ALLOWED_CHARACTERS, DEFAULT_SHORT_ID_LENGTH
 
 
-def get_unique_short():
-    '''Генерация ссылки.'''
+def get_unique_short_id():
     while True:
-        short_id = ''.join(choices(ascii_letters + digits, k=6))
-        if not URLMap.query.filter_by(short=short_id).first():
-            return short_id
+        random_list = random.choices(ALLOWED_CHARACTERS, k=DEFAULT_SHORT_ID_LENGTH)
+        random_string = ''.join(random_list)
+        if not URLMap.query.filter_by(short=random_string).first():
+            return random_string
