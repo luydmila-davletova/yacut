@@ -4,35 +4,32 @@ from flask import (
     request
 )
 
-from . import app, db
+from . import app
 from .forms import URLForm
 from .models import URLMap
-from .utils import get_unique_short_id
 
 
 @app.route('/', methods=['GET', 'POST'])
 def index_view():
+    """Ввод оригинальной ссылки и генерация короткой."""
     form = URLForm()
     if form.validate_on_submit():
-        short = form.custom_id.data
-        if not short:
-            short = get_unique_short_id()
-        elif URLMap.query.filter_by(short=short).first():
+        short = form.custom_id.data or URLMap.get_unique_short_id(None)
+        if URLMap.get_url_obj(short).first():
             flash(f'Имя {short} уже занято!')
             return render_template('main_page.html', form=form)
-        url_map = URLMap(
-            original=form.original_link.data,
-            short=short,
-        )
-        db.session.add(url_map)
-        db.session.commit()
         flash(f'Ваша новая ссылка готова: '
               f'<a href="{request.base_url}{short}">'
               f'{request.base_url}{short}</a>')
+        return render_template(
+            'main_page.html',
+            url=URLMap.save_obj(original=form.original_link.data, short=short),
+            form=form)
+
     return render_template('main_page.html', form=form)
 
 
 @app.route('/<string:custom_id>')
 def url_redirect(custom_id):
-    url_map = URLMap.query.filter_by(short=custom_id).first_or_404()
-    return redirect(url_map.original)
+    """Редирект короткой ссылки на оригинальную."""
+    return redirect(URLMap.get_url_obj(custom_id).first_or_404().original)
