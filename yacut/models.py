@@ -52,11 +52,11 @@ class URLMap(db.Model):
     def get_unique_short_id(cls, short):
         """Метод для проверки и генерации короткой ссылки."""
         if not short:
-            short = ''.join(
-                random.choice(ALLOWED_CHARACTERS)
-                for item in range(DEFAULT_SHORT_ID_LENGTH)
+            random_list = random.choices(
+                ALLOWED_CHARACTERS, k=DEFAULT_SHORT_ID_LENGTH
             )
-        if cls.get_url_obj(short).first():
+            short = ''.join(random_list)
+        if cls.get_url_obj(short).first() is not None:
             raise InvalidAPIUsage(SHORT_URL_TAKEN.format(short=short))
         if not re.match(PATTERN, short):
             raise InvalidAPIUsage(ERROR_SHORT_URL)
